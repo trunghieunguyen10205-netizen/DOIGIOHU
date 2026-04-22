@@ -1,0 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --primary: #0071e3; /* Apple Blue */
+  --primary-glow: rgba(0, 113, 227, 0.3);
+  --accent: #ff3b30; /* Apple Red */
+  --bg-color: #000;
+  --glass-bg: rgba(255, 255, 255, 0.9); /* More solid for better readability */
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --text-main: #1d1d1f; /* Apple Black */
+  --text-muted: #424245; 
+  --radius-lg: 32px;
+  --radius-md: 22px;
+  --shadow-premium: 0 8px 30px rgba(0, 0, 0, 0.04), inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--bg-color);
+  color: var(--text-main);
+  overflow-x: hidden;
+  min-height: 100vh;
+  letter-spacing: -0.01em;
+}
+
+/* Immersive Background with Ken Burns Effect */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=2070&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+  z-index: -1;
+  animation: kenBurns 40s ease-in-out infinite alternate;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.3); /* Darken slightly but NO global blur */
+  z-index: -1;
+  pointer-events: none;
+}
+
+@keyframes kenBurns {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.1); }
+}
+
+.layout-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+  position: relative;
+}
+
+.menu-grid {
+  display: grid;
+  gap: 24px;
+  padding: 0 20px 80px;
+}
+
+@media (max-width: 599px) { .menu-grid { grid-template-columns: 1fr 1fr; gap: 16px; } }
+@media (min-width: 600px) and (max-width: 1023px) { .menu-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1024px) { .menu-grid { grid-template-columns: repeat(4, 1fr); padding: 0 40px 100px; } }
+
+/* Apple Glassmorphism Card */
+.premium-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-premium);
+  transition: all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  overflow: hidden;
+}
+
+.premium-card:hover {
+  transform: scale(1.02);
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+/* Animations */
+.animate-up {
+  animation: slideUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  opacity: 0;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-scale {
+  animation: scaleIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  opacity: 0;
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.tab-active {
+  background: var(--primary) !important;
+  color: white !important;
+  box-shadow: 0 8px 20px var(--primary-glow) !important;
+  border-color: transparent !important;
+}
+
+.out-of-stock-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
