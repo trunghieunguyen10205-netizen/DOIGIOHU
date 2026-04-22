@@ -104,7 +104,7 @@ export default function LoginPage() {
         </form>
 
         <div style={{ marginTop: '40px', textAlign: 'center', paddingTop: '30px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
-          <button onClick={() => window.location.href = 'http://localhost:5174/menu'} style={{ background: 'transparent', border: 'none', color: '#86868b', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', textDecoration: 'underline' }}>
+          <button onClick={() => window.location.href = 'https://doigiohu-customer.onrender.com/menu'} style={{ background: 'transparent', border: 'none', color: '#86868b', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', textDecoration: 'underline' }}>
             Quay lại trang khách hàng
           </button>
         </div>

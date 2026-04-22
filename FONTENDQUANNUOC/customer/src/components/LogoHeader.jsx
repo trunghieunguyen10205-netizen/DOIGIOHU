@@ -30,7 +30,7 @@ const LogoHeader = ({ subtitle }) => {
     setClickCount(newCount);
     if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
     if (newCount >= 6) {
-      window.location.href = 'http://localhost:5173/login';
+      window.location.href = 'https://doigiohu-staff.onrender.com/login';
       setClickCount(0);
       return;
     }
