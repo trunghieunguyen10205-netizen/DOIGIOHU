@@ -33,7 +33,7 @@ export default function StaffOrdersPage() {
   const [paymentModal, setPaymentModal] = useState(null);
 
   const fetchActiveOrders = () => {
-    axios.get('http://localhost:3001/api/orders')
+    axios.get('https://doigiohu.onrender.com/api/orders')
       .then(res => {
         const rawOrders = Array.isArray(res.data) ? res.data : [];
         const map = {};
@@ -62,7 +62,7 @@ export default function StaffOrdersPage() {
 
   const updateBatchStatus = async (batchId, newStatus) => {
     try {
-      await axios.put(`http://localhost:3001/api/orders/${batchId}/status`, { status: newStatus });
+      await axios.put(`https://doigiohu.onrender.com/api/orders/${batchId}/status`, { status: newStatus });
       fetchActiveOrders();
     } catch (e) { alert('Lỗi cập nhật: ' + e.message); }
   };
@@ -73,7 +73,7 @@ export default function StaffOrdersPage() {
     if (!window.confirm(`Xác nhận thu ${paymentModal.total.toLocaleString()}đ tiền mặt?`)) return;
     try {
       for (const b of paymentModal.batches)
-        await axios.put(`http://localhost:3001/api/orders/${b.id}/status`, { status: 'completed' });
+        await axios.put(`https://doigiohu.onrender.com/api/orders/${b.id}/status`, { status: 'completed' });
       setPaymentModal(null);
       fetchActiveOrders();
     } catch (e) { alert('Lỗi: ' + e.message); }
@@ -83,7 +83,7 @@ export default function StaffOrdersPage() {
     if (!window.confirm(`Xác nhận đã nhận chuyển khoản ${paymentModal.total.toLocaleString()}đ?`)) return;
     try {
       for (const b of paymentModal.batches)
-        await axios.put(`http://localhost:3001/api/orders/${b.id}/status`, { status: 'completed' });
+        await axios.put(`https://doigiohu.onrender.com/api/orders/${b.id}/status`, { status: 'completed' });
       setPaymentModal(null);
       fetchActiveOrders();
     } catch (e) { alert('Lỗi: ' + e.message); }

@@ -8,7 +8,7 @@ export default function StaffTableMapPage() {
 
   useEffect(() => {
     const fetchActiveOrders = () => {
-      axios.get('http://localhost:3001/api/orders')
+      axios.get('https://doigiohu.onrender.com/api/orders')
            .then(res => {
              const activeIds = res.data.map(o => String(o.table_id));
              setOccupiedTables([...new Set(activeIds)]);
