@@ -6,8 +6,8 @@ import ProductsTab from './ProductsTab';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
 import { io } from 'socket.io-client';
 
-const API = 'http://localhost:3001/api';
-const SOCKET_URL = 'http://localhost:3001';
+const API = 'https://doigiohu.onrender.com/api';
+const SOCKET_URL = 'https://doigiohu.onrender.com';
 
 const UI_MAP = {
   pending:   { color: '#FF9500', text: 'Chờ Pha',        bg: 'rgba(255, 149, 0, 0.1)', icon: <FiClock /> },

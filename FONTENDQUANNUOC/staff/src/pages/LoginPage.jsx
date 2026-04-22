@@ -14,7 +14,7 @@ export default function LoginPage() {
 
     try {
       console.log('Đang gửi yêu cầu đăng nhập cho:', username);
-      const res = await axios.post('http://localhost:3001/api/auth/login', { username, password });
+      const res = await axios.post('https://doigiohu.onrender.com/api/auth/login', { username, password });
       
       const { token, user } = res.data;
       console.log('Kết quả từ Server:', res.data);

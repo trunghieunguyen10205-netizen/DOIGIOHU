@@ -23,7 +23,7 @@ export default function CartPage() {
         items: cart
       };
       
-      const res = await axios.post('http://localhost:3001/api/orders', payload);
+      const res = await axios.post('https://doigiohu.onrender.com/api/orders', payload);
       clearCart();
       navigate(`/tracking/${res.data.orderCode}`);
     } catch (err) {
@@ -75,7 +75,7 @@ export default function CartPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', marginBottom: '35px' }}>
           {cart.map((item, index) => (
             <div key={index} className="premium-card animate-scale" style={{ display: 'flex', padding: '15px', alignItems: 'center', gap: '18px', animationDelay: `${index * 0.1}s`, background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.5)' }}>
-              <img src={item.image ? (item.image.startsWith('http') ? item.image : `http://localhost:3001/${item.image}`) : `https://placehold.co/100x100/6366f1/FFFFFF/png?text=${encodeURIComponent(item.name)}`} alt={item.name} style={{ width: '85px', height: '85px', borderRadius: '20px', objectFit: 'cover', boxShadow: '0 8px 15px rgba(0,0,0,0.08)' }} />
+              <img src={item.image ? (item.image.startsWith('http') ? item.image : `https://doigiohu.onrender.com/${item.image}`) : `https://placehold.co/100x100/6366f1/FFFFFF/png?text=${encodeURIComponent(item.name)}`} alt={item.name} style={{ width: '85px', height: '85px', borderRadius: '20px', objectFit: 'cover', boxShadow: '0 8px 15px rgba(0,0,0,0.08)' }} />
               
               <div style={{ flex: 1 }}>
                 <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: '800', lineHeight: 1.2 }}>{item.name}</h4>

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { FiPlus, FiEdit2, FiTrash2, FiX, FiCheck, FiImage, FiType, FiTag, FiDollarSign, FiAlignLeft, FiChevronDown } from 'react-icons/fi';
 import axios from 'axios';
 
-const API = 'http://localhost:3001/api';
+const API = 'https://doigiohu.onrender.com/api';
 
 const EMPTY = { name: '', price: '', category_id: '', description: '', image: '' };
 
@@ -192,7 +192,7 @@ export default function ProductsTab() {
           <div key={item.id} className="modern-card animate-scale" style={{ padding: 0, overflow: 'hidden', animationDelay: `${idx * 0.05}s`, opacity: item.is_available ? 1 : 0.8 }}>
             <div style={{ position: 'relative', height: '180px' }}>
               <img
-                src={item.image ? (item.image.startsWith('http') ? item.image : `http://localhost:3001/${item.image}`) : `https://placehold.co/400x220/0071e3/fff?text=${encodeURIComponent(item.name)}`}
+                src={item.image ? (item.image.startsWith('http') ? item.image : `https://doigiohu.onrender.com/${item.image}`) : `https://placehold.co/400x220/0071e3/fff?text=${encodeURIComponent(item.name)}`}
                 alt={item.name}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
@@ -279,7 +279,7 @@ export default function ProductsTab() {
 
               {form.image && (
                 <div style={{ borderRadius: '20px', overflow: 'hidden', height: '140px', border: '2px solid rgba(0,0,0,0.05)' }}>
-                  <img src={form.image.startsWith('http') ? form.image : `http://localhost:3001/${form.image}`} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={form.image.startsWith('http') ? form.image : `https://doigiohu.onrender.com/${form.image}`} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
               )}
             </div>

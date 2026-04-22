@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiPlus, FiMinus, FiShoppingBag, FiX } from 'react-icons/fi';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = 'https://doigiohu.onrender.com/api';
 
 export default function StaffTakeOrderPage() {
   const { tableId } = useParams();
@@ -192,7 +192,7 @@ export default function StaffTakeOrderPage() {
             }}
           >
             <img 
-              src={item.image ? (item.image.startsWith('http') ? item.image : `http://localhost:3001/${item.image}`) : `https://placehold.co/60x60/6366f1/fff?text=${item.name[0]}`}
+              src={item.image ? (item.image.startsWith('http') ? item.image : `https://doigiohu.onrender.com/${item.image}`) : `https://placehold.co/60x60/6366f1/fff?text=${item.name[0]}`}
               alt={item.name}
               style={{ width: '50px', height: '50px', borderRadius: '12px', objectFit: 'cover' }}
             />

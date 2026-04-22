@@ -29,7 +29,7 @@ export default function OrderTrackingPage() {
 
     const fetchOrder = async () => {
       try {
-        const res = await axios.get(`http://localhost:3001/api/orders/track/${orderCode}`);
+        const res = await axios.get(`https://doigiohu.onrender.com/api/orders/track/${orderCode}`);
         setOrder(res.data);
       } catch (err) {
         console.error(err);
@@ -40,7 +40,7 @@ export default function OrderTrackingPage() {
     
     fetchOrder();
 
-    const socket = io('http://localhost:3001');
+    const socket = io('https://doigiohu.onrender.com');
     socket.emit('join:order_room', orderCode);
     
     socket.on('order:status_change', (data) => {

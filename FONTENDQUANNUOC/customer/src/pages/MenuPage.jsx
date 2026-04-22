@@ -15,8 +15,8 @@ export default function MenuPage() {
   const fetchData = useCallback(async (isInitial = false) => {
     try {
       const [catsRes, itemsRes] = await Promise.all([
-        isInitial ? axios.get('http://localhost:3001/api/categories') : Promise.resolve(null),
-        axios.get('http://localhost:3001/api/menu-items?all=true')
+        isInitial ? axios.get('https://doigiohu.onrender.com/api/categories') : Promise.resolve(null),
+        axios.get('https://doigiohu.onrender.com/api/menu-items?all=true')
       ]);
 
       if (catsRes) setCategories(catsRes.data);
@@ -127,7 +127,7 @@ export default function MenuPage() {
 
             <div style={{ position: 'relative', overflow: 'hidden' }}>
               <img
-                src={item.image ? (item.image.startsWith('http') ? item.image : `http://localhost:3001/${item.image}`) : `https://placehold.co/400x400/6366f1/FFFFFF/png?text=${encodeURIComponent(item.name)}`}
+                src={item.image ? (item.image.startsWith('http') ? item.image : `https://doigiohu.onrender.com/${item.image}`) : `https://placehold.co/400x400/6366f1/FFFFFF/png?text=${encodeURIComponent(item.name)}`}
                 alt={item.name}
                 style={{ width: '100%', height: '160px', objectFit: 'cover' }}
               />
