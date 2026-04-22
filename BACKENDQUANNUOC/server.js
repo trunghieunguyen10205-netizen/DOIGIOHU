@@ -63,9 +63,9 @@ const bcrypt = require('bcrypt');
 async function seedAdmin() {
   try {
     const usersToSeed = [
-      { u: 'admin', p: '123', f: 'Quản Trị Viên', r: 'manager' },
+      { u: 'admin', p: '123', f: 'Quản Trị Viên', r: 'admin' },
       { u: 'nhanvien', p: '123', f: 'Nhân Viên Mẫu', r: 'staff' },
-      { u: 'quanly', p: 'admin', f: 'Quản Lý Mẫu', r: 'manager' }
+      { u: 'quanly', p: 'admin', f: 'Quản Lý Mẫu', r: 'admin' }
     ];
 
     for (const user of usersToSeed) {
