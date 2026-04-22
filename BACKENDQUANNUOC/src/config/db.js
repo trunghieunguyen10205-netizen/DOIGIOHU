@@ -11,13 +11,17 @@ const pool = mysql.createPool({
   port: process.env.DB_PORT || 3306,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  // Thêm SSL để chạy được trên Aiven/Cloud
+  ssl: process.env.DB_HOST !== 'localhost' ? {
+    rejectUnauthorized: false
+  } : undefined
 });
 
 // Kiểm tra kết nối
 pool.getConnection()
   .then(connection => {
-    console.log('Đã kết nối thành công tới database MySQL!');
+    console.log(`Đã kết nối thành công tới database MySQL tại: ${process.env.DB_HOST || 'localhost'}`);
     connection.release();
   })
   .catch(err => {
