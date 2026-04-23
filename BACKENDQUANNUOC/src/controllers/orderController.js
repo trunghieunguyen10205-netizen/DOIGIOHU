@@ -14,19 +14,30 @@ const createOrder = async (req, res) => {
 
     const orderCode = generateOrderCode();
     
-    // Insert đơn hàng
+    // Insert đơn hàng (Sửa cột total_amount -> total, note -> customer_note)
     const [orderResult] = await connection.query(
-      'INSERT INTO orders (order_code, table_id, total_amount, note, status) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO orders (order_code, table_id, total, customer_note, status) VALUES (?, ?, ?, ?, ?)',
       [orderCode, table_id || null, total_amount, note || '', 'pending']
     );
 
     const orderId = orderResult.insertId;
 
-    // Insert chi tiết các món
+    // Insert chi tiết các món (Sửa cột cho khớp SQL: item_name, item_price, options_detail)
     for (const item of items) {
+      // Tính line_total sơ bộ: giá * số lượng
+      const lineTotal = (item.price_snapshot || item.price) * item.quantity;
+      
       await connection.query(
-        'INSERT INTO order_items (order_id, menu_item_id, quantity, price_snapshot, options) VALUES (?, ?, ?, ?, ?)',
-        [orderId, item.menu_item_id, item.quantity, item.price_snapshot, JSON.stringify(item.options || {})]
+        'INSERT INTO order_items (order_id, menu_item_id, item_name, item_price, quantity, options_detail, line_total) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [
+          orderId, 
+          item.menu_item_id || item.id, 
+          item.name || 'Món không tên', 
+          item.price_snapshot || item.price, 
+          item.quantity, 
+          JSON.stringify(item.options || item.selectedOptions || {}),
+          lineTotal
+        ]
       );
     }
 
@@ -51,7 +62,7 @@ const createOrder = async (req, res) => {
 
   } catch (error) {
     await connection.rollback();
-    console.error(error);
+    console.error('LỖI ĐẶT MÓN:', error);
     res.status(500).json({ message: 'Lỗi server', error: error.message });
   } finally {
     connection.release();
@@ -68,6 +79,9 @@ const getOrderByCode = async (req, res) => {
     }
     
     const order = orders[0];
+    // Sửa total_amount sang total để đồng bộ
+    order.total_amount = order.total;
+
     const [items] = await pool.query(`
       SELECT oi.*, m.name, m.image 
       FROM order_items oi 
@@ -89,6 +103,10 @@ const getOrders = async (req, res) => {
     
     // Trích xuất chi tiết order_items cho từng đơn
     for (let i = 0; i < orders.length; i++) {
+      // Đồng bộ field name
+      orders[i].total_amount = orders[i].total;
+      orders[i].note = orders[i].customer_note;
+
       const [items] = await pool.query(`
         SELECT oi.*, m.name 
         FROM order_items oi 
@@ -96,15 +114,16 @@ const getOrders = async (req, res) => {
         WHERE oi.order_id = ?
       `, [orders[i].id]);
       
-      // Parse cột options thành JSON
+      // Parse cột options_detail thành JSON
       orders[i].items = items.map(it => ({
         ...it,
-        options: typeof it.options === 'string' ? JSON.parse(it.options) : it.options
+        options: typeof it.options_detail === 'string' ? JSON.parse(it.options_detail) : it.options_detail
       }));
     }
 
     res.status(200).json(orders);
   } catch (error) {
+    console.error('LỖI LẤY ĐƠN:', error);
     res.status(500).json({ message: 'Lỗi server', error: error.message });
   }
 };
