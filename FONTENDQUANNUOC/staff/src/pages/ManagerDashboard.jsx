@@ -50,7 +50,7 @@ export default function ManagerDashboard() {
       res.data.forEach(row => {
         const key = row.table_id || 'Mang đi';
         if (!map[key]) map[key] = { id: key, table: `Bàn ${key}`, total: 0, batches: [] };
-        map[key].total += parseFloat(row.total_amount);
+        map[key].total += parseFloat(row.total || row.total_amount || 0);
         map[key].batches.push({
           id: row.id, status: row.status,
           time: new Date(row.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
@@ -138,11 +138,11 @@ export default function ManagerDashboard() {
   // Rendering Tabs as Functions to avoid focus loss issue
   const renderOrdersTab = () => (
     <div className="animate-up">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-        <h3 style={{ margin: 0, fontWeight: 900, fontSize: '1.8rem', letterSpacing: '-0.02em' }}>Đơn hàng hiện tại</h3>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#34C759', fontWeight: 800, fontSize: '0.85rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+        <h3 style={{ margin: 0, fontWeight: 900, fontSize: 'clamp(1.3rem, 5vw, 1.8rem)', letterSpacing: '-0.02em' }}>Đơn hàng hiện tại</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#34C759', fontWeight: 800, fontSize: '0.8rem' }}>
           <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'currentColor', boxShadow: '0 0 10px currentColor' }}></div>
-          ĐANG TRỰC TUYẾN
+          LIVE
         </div>
       </div>
       <div className="manager-order-grid">
@@ -186,53 +186,61 @@ export default function ManagerDashboard() {
 
   const renderStatsTab = () => (
     <div className="animate-up">
-      <div style={{ marginBottom: '30px' }}>
-        <h3 style={{ margin: 0, fontWeight: 900, fontSize: '1.8rem', letterSpacing: '-0.02em' }}>Báo cáo doanh thu</h3>
+      <div style={{ marginBottom: '24px' }}>
+        <h3 style={{ margin: 0, fontWeight: 900, fontSize: 'clamp(1.3rem, 5vw, 1.8rem)', letterSpacing: '-0.02em' }}>Báo cáo doanh thu</h3>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '30px' }}>
+
+      {/* Revenue Summary Cards - Stack on mobile */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '14px', marginBottom: '24px' }}>
         {[
-          { label: 'Hôm nay', value: summary.day, color: '#0071E3', icon: <FiActivity /> },
-          { label: 'Tháng này', value: summary.month, color: '#34C759', icon: <FiDollarSign /> },
-          { label: 'Năm nay', value: summary.year, color: '#AF52DE', icon: <FiCalendar /> }
+          { label: 'Hôm nay', value: summary.day,   color: '#0071E3', icon: <FiActivity />, emoji: '📅' },
+          { label: 'Tháng này', value: summary.month, color: '#34C759', icon: <FiDollarSign />, emoji: '💰' },
+          { label: 'Năm nay', value: summary.year,  color: '#AF52DE', icon: <FiCalendar />, emoji: '🏆' }
         ].map(s => (
-          <div key={s.label} className="modern-card animate-scale" style={{ padding: '30px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-              <span style={{ color: '#86868b', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px' }}>{s.label}</span>
-              <div style={{ color: s.color, background: `${s.color}15`, padding: '10px', borderRadius: '14px' }}>{s.icon}</div>
+          <div key={s.label} className="modern-card animate-scale" style={{ padding: '20px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <span style={{ color: '#86868b', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '1px' }}>{s.label}</span>
+              <div style={{ color: s.color, background: `${s.color}18`, padding: '8px', borderRadius: '12px', fontSize: '0.9rem' }}>{s.icon}</div>
             </div>
-            <div style={{ fontSize: '2.2rem', fontWeight: 900 }}>{s.value.toLocaleString()}đ</div>
+            <div style={{ fontSize: 'clamp(1.2rem, 4vw, 1.8rem)', fontWeight: 900, color: s.color, lineHeight: 1.1 }}>
+              {(s.value || 0).toLocaleString()}đ
+            </div>
           </div>
         ))}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '30px' }}>
-        <div className="modern-card" style={{ padding: '25px', height: '400px' }}>
-          <h4 style={{ marginBottom: '25px', fontWeight: 800 }}>Biểu đồ 7 ngày</h4>
+
+      {/* Charts - Stack on mobile */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div className="modern-card" style={{ padding: '20px', height: '280px' }}>
+          <h4 style={{ marginBottom: '16px', fontWeight: 800, fontSize: '1rem' }}>Biểu đồ 7 ngày</h4>
           <ResponsiveContainer width="100%" height="85%">
             <LineChart data={revenueData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-              <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#86868b', fontSize: 12}} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{fill: '#86868b', fontSize: 12}} />
+              <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#86868b', fontSize: 11}} dy={8} />
+              <YAxis axisLine={false} tickLine={false} tick={{fill: '#86868b', fontSize: 10}} width={50} />
               <Tooltip contentStyle={{ borderRadius: '15px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', background: 'rgba(255,255,255,0.95)' }} />
-              <Line type="monotone" dataKey="revenue" stroke="#0071E3" strokeWidth={4} dot={{ r: 6, fill: '#0071E3', strokeWidth: 3, stroke: '#fff' }} />
+              <Line type="monotone" dataKey="revenue" stroke="#0071E3" strokeWidth={3} dot={{ r: 5, fill: '#0071E3', strokeWidth: 2, stroke: '#fff' }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
-        <div className="modern-card" style={{ padding: '25px', height: '400px' }}>
-          <h4 style={{ marginBottom: '25px', fontWeight: 800 }}>Sản phẩm tiêu biểu</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-            {topItems.slice(0, 5).map((item, idx) => (
-              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <div style={{ width: '30px', fontWeight: 900, color: '#86868b' }}>{idx+1}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700 }}>{item.name}</div>
-                  <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.05)', borderRadius: '4px', marginTop: '6px' }}>
-                    <div style={{ width: `${(item.total_sold / (topItems[0]?.total_sold || 1)) * 100}%`, height: '100%', background: '#0071E3', borderRadius: '4px' }}></div>
+        <div className="modern-card" style={{ padding: '20px' }}>
+          <h4 style={{ marginBottom: '20px', fontWeight: 800, fontSize: '1rem' }}>Top món bán chạy</h4>
+          {topItems.length === 0 ? (
+            <div style={{ textAlign: 'center', color: '#86868b', padding: '30px', fontWeight: 600 }}>Chưa có dữ liệu</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {topItems.slice(0, 5).map((item, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: idx === 0 ? '#FFD700' : idx === 1 ? '#C0C0C0' : idx === 2 ? '#CD7F32' : '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.75rem', flexShrink: 0 }}>{idx+1}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</div>
+                    <div style={{ width: `${(item.total_sold / (topItems[0]?.total_sold || 1)) * 100}%`, height: '6px', background: '#0071E3', borderRadius: '4px', marginTop: '5px', minWidth: '8px', transition: 'width 0.5s' }}></div>
                   </div>
+                  <div style={{ fontWeight: 800, fontSize: '0.85rem', flexShrink: 0 }}>{item.total_sold} <span style={{fontSize: '0.75rem', color: '#86868b'}}>bán</span></div>
                 </div>
-                <div style={{ fontWeight: 800 }}>{item.total_sold} <span style={{fontSize: '0.8rem', color: '#86868b'}}>bán ra</span></div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
