@@ -11,6 +11,7 @@ export default function MenuPage() {
   const [items, setItems] = useState([]);
   const [activeType, setActiveType] = useState('drink');
   const [activeCat, setActiveCat] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchData = useCallback(async (isInitial = false) => {
     try {
@@ -51,7 +52,17 @@ export default function MenuPage() {
     }
   }, [currentCategories, activeCat]);
 
-  const filteredItems = items.filter(item => item.category_id === activeCat);
+  // Nếu đang search thì hiện kết quả across tất cả danh mục
+  const filteredItems = useMemo(() => {
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      return items.filter(item =>
+        item.name.toLowerCase().includes(q) ||
+        (item.description || '').toLowerCase().includes(q)
+      );
+    }
+    return items.filter(item => item.category_id === activeCat);
+  }, [items, activeCat, searchQuery]);
 
   return (
     <div className="layout-container" style={{ paddingBottom: '40px' }}>
@@ -60,8 +71,43 @@ export default function MenuPage() {
         <LogoHeader subtitle="Tinh hoa trà & cà phê 🌿" />
       </div>
 
-      {/* Type Toggle */}
-      <div className="animate-up" style={{ padding: '30px 25px 0', animationDelay: '0.2s' }}>
+      {/* Search Bar */}
+      <div className="animate-up" style={{ padding: '20px 20px 0', animationDelay: '0.15s' }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '12px',
+          background: 'rgba(255,255,255,0.75)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '20px',
+          padding: '12px 18px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+          border: '1.5px solid rgba(255,255,255,0.8)',
+        }}>
+          <span style={{ fontSize: '1.2rem' }}>🔍</span>
+          <input
+            type="text"
+            placeholder="Tìm món ăn, đồ uống..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            style={{
+              flex: 1, border: 'none', background: 'transparent',
+              fontSize: '0.95rem', fontWeight: 600, outline: 'none',
+              color: '#1d1d1f'
+            }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              style={{ background: 'rgba(0,0,0,0.08)', border: 'none', borderRadius: '50%', width: '26px', height: '26px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', color: '#555' }}
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Type Toggle - ẩn khi đang search */}
+      {!searchQuery && (
+      <div className="animate-up" style={{ padding: '20px 25px 0', animationDelay: '0.2s' }}>
         <div style={{ display: 'flex', background: 'rgba(255,255,255,0.6)', padding: '6px', borderRadius: '35px', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.02)' }}>
           <button
             onClick={() => setActiveType('drink')}
@@ -89,10 +135,11 @@ export default function MenuPage() {
           </button>
         </div>
       </div>
+      )}
 
-      {/* Sub Categories */}
-      {currentCategories.length > 0 && (
-        <div className="animate-up" style={{ display: 'flex', overflowX: 'auto', padding: '25px 20px', gap: '15px', animationDelay: '0.3s' }}>
+      {/* Sub Categories - ẩn khi đang search */}
+      {!searchQuery && currentCategories.length > 0 && (
+        <div className="animate-up" style={{ display: 'flex', overflowX: 'auto', padding: '20px 20px', gap: '12px', animationDelay: '0.3s' }}>
           {currentCategories.map(cat => (
             <button
               key={cat.id}
@@ -107,6 +154,13 @@ export default function MenuPage() {
               {cat.name}
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Search result label */}
+      {searchQuery && (
+        <div style={{ padding: '16px 22px 0', fontSize: '0.85rem', fontWeight: 700, color: 'rgba(255,255,255,0.8)' }}>
+          {filteredItems.length > 0 ? `🔎 Tìm thấy ${filteredItems.length} kết quả cho "${searchQuery}"` : `Không tìm thấy "${searchQuery}"`}
         </div>
       )}
 
@@ -151,8 +205,8 @@ export default function MenuPage() {
         ))}
 
         {filteredItems.length === 0 && (
-          <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)', fontWeight: '600' }}>
-            🍃 Danh mục đang được cập nhật...
+          <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '60px 0', color: 'rgba(255,255,255,0.7)', fontWeight: '600' }}>
+            {searchQuery ? `🔍 Không tìm thấy món nào phù hợp` : '🍃 Danh mục đang được cập nhật...'}
           </div>
         )}
       </div>

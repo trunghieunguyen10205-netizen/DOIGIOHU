@@ -14,6 +14,7 @@ export default function StaffTakeOrderPage() {
   const [menuItems, setMenuItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [activeCat, setActiveCat] = useState('Tất cả');
+  const [searchQuery, setSearchQuery] = useState('');
   
   const [cart, setCart] = useState([]);
   const [isCartExpanded, setIsCartExpanded] = useState(false);
@@ -105,10 +106,20 @@ export default function StaffTakeOrderPage() {
 
   const filteredItems = useMemo(() => {
     if (!Array.isArray(menuItems)) return [];
-    if (activeCat === 'Tất cả') return menuItems;
-    const cat = categories.find(c => c.name === activeCat);
-    return menuItems.filter(i => i.category_id === cat?.id);
-  }, [menuItems, activeCat, categories]);
+    let result = menuItems;
+    // Lọc theo tìm kiếm trước
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(i =>
+        i.name.toLowerCase().includes(q) ||
+        (i.description || '').toLowerCase().includes(q)
+      );
+    } else if (activeCat !== 'Tất cả') {
+      const cat = categories.find(c => c.name === activeCat);
+      result = result.filter(i => i.category_id === cat?.id);
+    }
+    return result;
+  }, [menuItems, activeCat, categories, searchQuery]);
     
   const total = cart.reduce((acc, i) => acc + i.price * i.qty, 0);
 
@@ -164,8 +175,40 @@ export default function StaffTakeOrderPage() {
         </div>
       )}
 
-      {/* Tabs Phân Loại Món */}
-      <div style={{ display: 'flex', overflowX: 'auto', padding: '15px 20px', gap: '10px' }}>
+      {/* Search Bar */}
+      <div style={{ padding: '12px 20px 0' }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '10px',
+          background: '#f5f5f7',
+          borderRadius: '16px',
+          padding: '10px 16px',
+          border: '1.5px solid rgba(0,0,0,0.06)',
+        }}>
+          <span style={{ fontSize: '1rem', color: '#999' }}>🔍</span>
+          <input
+            type="text"
+            placeholder="Tìm tên món..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            style={{
+              flex: 1, border: 'none', background: 'transparent',
+              fontSize: '0.9rem', fontWeight: 600, outline: 'none', color: '#1d1d1f'
+            }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              style={{ background: 'rgba(0,0,0,0.08)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', color: '#555', flexShrink: 0 }}
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Tabs - ẩn khi đang search */}
+      {!searchQuery && (
+      <div style={{ display: 'flex', overflowX: 'auto', padding: '12px 20px', gap: '10px' }}>
         {categories.map(c => (
           <button 
             key={c.id} onClick={() => setActiveCat(c.name)}
@@ -181,6 +224,12 @@ export default function StaffTakeOrderPage() {
           </button>
         ))}
       </div>
+      )}
+      {searchQuery && (
+        <div style={{ padding: '10px 22px 4px', fontSize: '0.8rem', fontWeight: 700, color: '#86868b' }}>
+          {filteredItems.length > 0 ? `🔎 ${filteredItems.length} kết quả cho "${searchQuery}"` : `Không tìm thấy "${searchQuery}"`}
+        </div>
+      )}
 
       {/* Menu Món (Dữ liệu DB Thật) */}
       <div style={{ padding: '0 20px 80px' }}>

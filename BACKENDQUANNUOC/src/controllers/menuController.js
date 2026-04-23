@@ -13,12 +13,21 @@ const getCategories = async (req, res) => {
 // ─── Tạo danh mục mới ──────────────────────────────────────────────
 const createCategory = async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, icon } = req.body;
     if (!name) return res.status(400).json({ message: 'Thiếu tên danh mục' });
-    const [result] = await pool.query(
-      'INSERT INTO categories (name, description) VALUES (?, ?)',
-      [name, description || null]
-    );
+    // Thử INSERT với cột icon trước, fallback nếu cột chưa tồn tại
+    let result;
+    try {
+      [result] = await pool.query(
+        'INSERT INTO categories (name, description, icon) VALUES (?, ?, ?)',
+        [name, description || null, icon || null]
+      );
+    } catch {
+      [result] = await pool.query(
+        'INSERT INTO categories (name, description) VALUES (?, ?)',
+        [name, description || null]
+      );
+    }
     const [newCat] = await pool.query('SELECT * FROM categories WHERE id = ?', [result.insertId]);
     res.status(201).json(newCat[0]);
   } catch (error) {
@@ -30,8 +39,13 @@ const createCategory = async (req, res) => {
 const updateCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description } = req.body;
-    await pool.query('UPDATE categories SET name=?, description=? WHERE id=?', [name, description || null, id]);
+    const { name, description, icon } = req.body;
+    // Thử UPDATE với icon trước, fallback nếu cột chưa tồn tại
+    try {
+      await pool.query('UPDATE categories SET name=?, description=?, icon=? WHERE id=?', [name, description || null, icon || null, id]);
+    } catch {
+      await pool.query('UPDATE categories SET name=?, description=? WHERE id=?', [name, description || null, id]);
+    }
     const [updated] = await pool.query('SELECT * FROM categories WHERE id = ?', [id]);
     if (updated.length === 0) return res.status(404).json({ message: 'Không tìm thấy danh mục' });
     res.status(200).json(updated[0]);

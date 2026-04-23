@@ -18,10 +18,20 @@ const pool = mysql.createPool({
   } : undefined
 });
 
-// Kiểm tra kết nối
+// Kiểm tra kết nối và tự động cập nhật schema (nếu thiếu cột)
 pool.getConnection()
-  .then(connection => {
+  .then(async (connection) => {
     console.log(`Đã kết nối thành công tới database MySQL tại: ${process.env.DB_HOST || 'localhost'}`);
+    try {
+      // Tự động thêm cột icon nếu chưa có
+      const [cols] = await connection.query('SHOW COLUMNS FROM categories LIKE "icon"');
+      if (cols.length === 0) {
+        await connection.query('ALTER TABLE categories ADD COLUMN icon VARCHAR(50) DEFAULT "🧋"');
+        console.log('✅ Đã thêm cột "icon" vào bảng categories.');
+      }
+    } catch (e) {
+      console.log('Lưu ý khi tự động cập nhật schema:', e.message);
+    }
     connection.release();
   })
   .catch(err => {

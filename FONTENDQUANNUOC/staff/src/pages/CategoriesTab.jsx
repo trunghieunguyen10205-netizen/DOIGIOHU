@@ -1,21 +1,107 @@
 import { useState, useEffect } from 'react';
-import { FiPlus, FiEdit2, FiTrash2, FiCheck, FiX, FiTag } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiCheck, FiX } from 'react-icons/fi';
 import axios from 'axios';
 import { useNotification } from '../components/Notification';
 
 const API = 'https://doigiohu.onrender.com/api';
 
-const CATEGORY_EMOJIS = ['☕', '🧋', '🍵', '🥤', '🍹', '🧃', '🍺', '🍶', '🧊', '🍰', '🍩', '🍪', '🥗', '🍜', '🍕', '🥪'];
+// ─── 150+ Emoji picker ───────────────────────────────────────────────────────
+const EMOJI_GROUPS = {
+  '☕ Đồ Uống':  ['☕','🍵','🧋','🥤','🍹','🧃','🍺','🍻','🥂','🍷','🍸','🍶','🧊','🧉','🫖','🍾','🥛','🍼'],
+  '🍔 Đồ Ăn':   ['🍔','🍕','🌮','🍜','🍝','🍛','🍚','🍱','🥗','🥪','🌯','🫔','🍞','🥐','🧆','🥙','🍗','🥩'],
+  '🍰 Bánh Ngọt':['🍰','🎂','🍩','🍪','🧁','🍫','🍬','🍭','🍮','🍯','🥧','🍡','🧇','🥞','🍦','🍨','🍧','🍿'],
+  '🍓 Trái Cây': ['🍓','🍇','🍉','🍊','🍋','🍌','🍍','🥭','🍎','🍏','🍑','🍒','🥝','🫐','🍈','🫒','🍅','🥑'],
+  '✨ Khác':     ['✨','⭐','🌟','💫','🎯','🔥','💎','🌈','🎪','🏷️','📦','🎁','🛒','🍃','🌿','🧸','🎨','🏆'],
+};
 
+// Mini Emoji Picker
+const EmojiPicker = ({ value, onChange }) => {
+  const [open, setOpen] = useState(false);
+  const [activeGroup, setActiveGroup] = useState(Object.keys(EMOJI_GROUPS)[0]);
+
+  return (
+    <div style={{ position: 'relative', flexShrink: 0 }}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        title="Chọn icon"
+        style={{
+          width: '50px', height: '50px', borderRadius: '16px',
+          background: 'linear-gradient(135deg, rgba(0,113,227,0.1), rgba(0,113,227,0.2))',
+          border: open ? '2px solid #0071E3' : '2px solid transparent',
+          fontSize: '1.7rem', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'all 0.2s',
+        }}
+      >
+        {value || '🧋'}
+      </button>
+
+      {open && (
+        <>
+          {/* Backdrop */}
+          <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 8000 }} />
+          <div style={{
+            position: 'absolute', top: 'calc(100% + 8px)', left: 0,
+            background: 'rgba(255,255,255,0.98)',
+            backdropFilter: 'blur(30px)',
+            borderRadius: '20px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.18)',
+            border: '1px solid rgba(0,0,0,0.08)',
+            zIndex: 8001, width: '272px', overflow: 'hidden',
+          }}>
+            {/* Group tabs */}
+            <div style={{ display: 'flex', overflowX: 'auto', padding: '10px 8px 0', gap: '5px', borderBottom: '1px solid #f0f0f0' }}>
+              {Object.keys(EMOJI_GROUPS).map(g => (
+                <button key={g} type="button" onClick={() => setActiveGroup(g)}
+                  style={{
+                    padding: '5px 10px', borderRadius: '10px', border: 'none', cursor: 'pointer',
+                    whiteSpace: 'nowrap', fontSize: '1rem', fontWeight: 700,
+                    background: activeGroup === g ? '#0071E3' : 'transparent',
+                    color: activeGroup === g ? '#fff' : '#555',
+                    transition: 'all 0.2s', flexShrink: 0,
+                  }}
+                  title={g}
+                >
+                  {g.split(' ')[0]}
+                </button>
+              ))}
+            </div>
+            {/* Emoji grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(9, 1fr)', gap: '1px', padding: '8px' }}>
+              {EMOJI_GROUPS[activeGroup].map(emoji => (
+                <button
+                  key={emoji} type="button"
+                  onClick={() => { onChange(emoji); setOpen(false); }}
+                  style={{
+                    background: emoji === value ? 'rgba(0,113,227,0.12)' : 'transparent',
+                    border: 'none', borderRadius: '8px', fontSize: '1.3rem',
+                    padding: '5px', cursor: 'pointer', transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => { if (emoji !== value) e.currentTarget.style.background = '#f5f5f7'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = emoji === value ? 'rgba(0,113,227,0.12)' : 'transparent'; }}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+// ─── Main Component ──────────────────────────────────────────────────────────
 export default function CategoriesTab() {
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [editingId, setEditingId] = useState(null); // null | 'new' | id
-  const [form, setForm] = useState({ name: '', description: '' });
-  const [saving, setSaving] = useState(false);
+  const [loading, setLoading]       = useState(true);
+  const [editingId, setEditingId]   = useState(null);
+  const [form, setForm]             = useState({ name: '', description: '', icon: '🧋' });
+  const [saving, setSaving]         = useState(false);
   const { showToast, showConfirm, NotificationUI } = useNotification();
 
-  const fetch = async () => {
+  const fetchCats = async () => {
     try {
       const res = await axios.get(`${API}/categories`);
       setCategories(res.data);
@@ -23,19 +109,11 @@ export default function CategoriesTab() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetch(); }, []);
+  useEffect(() => { fetchCats(); }, []);
 
-  const startAdd = () => {
-    setForm({ name: '', description: '' });
-    setEditingId('new');
-  };
-
-  const startEdit = (cat) => {
-    setForm({ name: cat.name, description: cat.description || '' });
-    setEditingId(cat.id);
-  };
-
-  const cancel = () => { setEditingId(null); setForm({ name: '', description: '' }); };
+  const startAdd  = () => { setForm({ name: '', description: '', icon: '🧋' }); setEditingId('new'); };
+  const startEdit = (cat) => { setForm({ name: cat.name, description: cat.description || '', icon: cat.icon || '🧋' }); setEditingId(cat.id); };
+  const cancel    = () => { setEditingId(null); setForm({ name: '', description: '', icon: '🧋' }); };
 
   const save = async () => {
     if (!form.name.trim()) return showToast('Thiếu thông tin', 'Vui lòng nhập tên danh mục', 'warning');
@@ -48,8 +126,7 @@ export default function CategoriesTab() {
         await axios.put(`${API}/categories/${editingId}`, form);
         showToast('Đã cập nhật', `Danh mục "${form.name}" đã được sửa`, 'success');
       }
-      cancel();
-      fetch();
+      cancel(); fetchCats();
     } catch (e) {
       showToast('Lỗi lưu', e.response?.data?.message || e.message, 'error');
     } finally { setSaving(false); }
@@ -57,34 +134,54 @@ export default function CategoriesTab() {
 
   const remove = async (cat) => {
     const ok = await showConfirm({
-      icon: '🗑️',
-      title: `Xóa "${cat.name}"?`,
-      message: 'Danh mục phải không còn món nào bên trong mới có thể xóa được.',
-      confirmText: 'Xóa ngay',
-      cancelText: 'Giữ lại',
-      danger: true,
+      icon: '🗑️', title: `Xóa "${cat.name}"?`,
+      message: 'Danh mục phải không còn món nào bên trong mới có thể xóa.',
+      confirmText: 'Xóa ngay', cancelText: 'Giữ lại', danger: true,
     });
     if (!ok) return;
     try {
       await axios.delete(`${API}/categories/${cat.id}`);
       showToast('Đã xóa', `Danh mục "${cat.name}" đã bị xóa`, 'success');
-      fetch();
+      fetchCats();
     } catch (e) {
       showToast('Không thể xóa', e.response?.data?.message || e.message, 'error');
     }
   };
 
-  const getEmoji = (name = '') => {
-    const lower = name.toLowerCase();
-    if (lower.includes('cà phê') || lower.includes('cafe')) return '☕';
-    if (lower.includes('trà') || lower.includes('matcha')) return '🍵';
-    if (lower.includes('nước') || lower.includes('ngọt')) return '🥤';
-    if (lower.includes('sinh tố') || lower.includes('ép')) return '🍹';
-    if (lower.includes('bia') || lower.includes('rượu')) return '🍺';
-    if (lower.includes('bánh') || lower.includes('cake')) return '🍰';
-    if (lower.includes('ăn') || lower.includes('food')) return '🍜';
-    return '🧋';
-  };
+  // Inline form component
+  const InlineForm = ({ color = '#0071E3', label }) => (
+    <div className="modern-card animate-scale" style={{ marginBottom: '16px', border: `2px solid ${color}`, padding: '20px' }}>
+      <div style={{ fontWeight: 800, fontSize: '0.9rem', marginBottom: '14px', color }}>{label}</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {/* Emoji + Name row */}
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <EmojiPicker value={form.icon} onChange={icon => setForm({ ...form, icon })} />
+          <input
+            autoFocus
+            placeholder="Tên danh mục (VD: Nước ngọt, Bia...)"
+            value={form.name}
+            onChange={e => setForm({ ...form, name: e.target.value })}
+            onKeyDown={e => e.key === 'Enter' && save()}
+            style={{ flex: 1, padding: '12px 16px', borderRadius: '14px', border: `1.5px solid ${color}40`, background: '#fff', fontWeight: 600, fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }}
+          />
+        </div>
+        <input
+          placeholder="Mô tả ngắn (tùy chọn)"
+          value={form.description}
+          onChange={e => setForm({ ...form, description: e.target.value })}
+          style={{ padding: '12px 16px', borderRadius: '14px', border: '1.5px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)', fontWeight: 500, fontSize: '0.88rem', outline: 'none', width: '100%', boxSizing: 'border-box' }}
+        />
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={cancel} className="btn-sleek" style={{ flex: 1, background: 'rgba(0,0,0,0.05)', color: '#555', padding: '12px' }}>
+            <FiX style={{ marginRight: 4 }} /> Huỷ
+          </button>
+          <button onClick={save} disabled={saving} className="btn-sleek" style={{ flex: 2, background: color, color: '#fff', padding: '12px' }}>
+            {saving ? 'Đang lưu...' : <><FiCheck style={{ marginRight: 4 }} /> {editingId === 'new' ? 'Xác nhận tạo' : 'Lưu thay đổi'}</>}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="animate-up">
@@ -97,132 +194,56 @@ export default function CategoriesTab() {
             Danh mục thực đơn
           </h3>
           <p style={{ color: '#86868b', fontSize: '0.82rem', fontWeight: 600, margin: '4px 0 0' }}>
-            {categories.length} danh mục • Thêm, sửa, xóa tùy ý
+            {categories.length} danh mục • Click vào emoji để đổi icon
           </p>
         </div>
-        <button
-          onClick={startAdd}
-          className="btn-sleek"
-          style={{ width: 'auto', padding: '12px 18px', background: '#0071E3', flexShrink: 0, fontSize: '0.9rem' }}
-        >
+        <button onClick={startAdd} className="btn-sleek"
+          style={{ width: 'auto', padding: '12px 18px', background: '#0071E3', flexShrink: 0, fontSize: '0.9rem' }}>
           <FiPlus /> Thêm mới
         </button>
       </div>
 
-      {/* Add form inline */}
-      {editingId === 'new' && (
-        <div className="modern-card animate-scale" style={{ marginBottom: '20px', border: '2px solid #0071E3', padding: '20px' }}>
-          <div style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '16px', color: '#0071E3' }}>
-            ✨ Tạo danh mục mới
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <input
-              autoFocus
-              placeholder="Tên danh mục (VD: Nước ngọt, Bia, Đồ ăn...)"
-              value={form.name}
-              onChange={e => setForm({ ...form, name: e.target.value })}
-              onKeyDown={e => e.key === 'Enter' && save()}
-              style={{ padding: '13px 16px', borderRadius: '14px', border: '1.5px solid rgba(0,113,227,0.3)', background: '#fff', fontWeight: 600, fontSize: '0.95rem', outline: 'none', width: '100%', boxSizing: 'border-box' }}
-            />
-            <input
-              placeholder="Mô tả ngắn (tùy chọn)"
-              value={form.description}
-              onChange={e => setForm({ ...form, description: e.target.value })}
-              style={{ padding: '13px 16px', borderRadius: '14px', border: '1.5px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)', fontWeight: 500, fontSize: '0.9rem', outline: 'none', width: '100%', boxSizing: 'border-box' }}
-            />
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={cancel} className="btn-sleek" style={{ flex: 1, background: 'rgba(0,0,0,0.05)', color: '#555', padding: '12px' }}>
-                Huỷ
-              </button>
-              <button onClick={save} disabled={saving} className="btn-sleek" style={{ flex: 2, background: '#0071E3', color: '#fff', padding: '12px' }}>
-                {saving ? 'Đang lưu...' : <><FiCheck /> Xác nhận tạo</>}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Add form */}
+      {editingId === 'new' && <InlineForm color="#0071E3" label="✨ Tạo danh mục mới" />}
 
-      {/* Loading */}
-      {loading && (
-        <div style={{ textAlign: 'center', padding: '60px', color: '#86868b', fontWeight: 600 }}>
-          Đang tải...
-        </div>
-      )}
+      {loading && <div style={{ textAlign: 'center', padding: '60px', color: '#86868b', fontWeight: 600 }}>Đang tải...</div>}
 
       {/* Category List */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {categories.map((cat, idx) => (
           <div key={cat.id}>
-            {/* Edit mode */}
             {editingId === cat.id ? (
-              <div className="modern-card animate-scale" style={{ border: '2px solid #34C759', padding: '20px' }}>
-                <div style={{ fontWeight: 800, fontSize: '0.9rem', marginBottom: '14px', color: '#34C759' }}>
-                  ✏️ Đang sửa: {cat.name}
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <input
-                    autoFocus
-                    placeholder="Tên danh mục"
-                    value={form.name}
-                    onChange={e => setForm({ ...form, name: e.target.value })}
-                    onKeyDown={e => e.key === 'Enter' && save()}
-                    style={{ padding: '12px 16px', borderRadius: '14px', border: '1.5px solid rgba(52,199,89,0.4)', background: '#fff', fontWeight: 600, fontSize: '0.95rem', outline: 'none', width: '100%', boxSizing: 'border-box' }}
-                  />
-                  <input
-                    placeholder="Mô tả (tùy chọn)"
-                    value={form.description}
-                    onChange={e => setForm({ ...form, description: e.target.value })}
-                    style={{ padding: '12px 16px', borderRadius: '14px', border: '1.5px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)', fontWeight: 500, fontSize: '0.9rem', outline: 'none', width: '100%', boxSizing: 'border-box' }}
-                  />
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <button onClick={cancel} className="btn-sleek" style={{ flex: 1, background: 'rgba(0,0,0,0.05)', color: '#555', padding: '11px' }}>
-                      <FiX /> Huỷ
-                    </button>
-                    <button onClick={save} disabled={saving} className="btn-sleek" style={{ flex: 2, background: '#34C759', color: '#fff', padding: '11px' }}>
-                      {saving ? 'Đang lưu...' : <><FiCheck /> Lưu thay đổi</>}
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <InlineForm color="#34C759" label={`✏️ Đang sửa: ${cat.name}`} />
             ) : (
-              /* Normal card */
-              <div
-                className="modern-card animate-up"
-                style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '18px 20px', animationDelay: `${idx * 0.04}s` }}
-              >
-                {/* Emoji avatar */}
+              <div className="modern-card animate-up"
+                style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 18px', animationDelay: `${idx * 0.04}s` }}>
+                {/* Emoji */}
                 <div style={{
-                  width: '52px', height: '52px', borderRadius: '18px',
-                  background: 'linear-gradient(135deg, #0071E315, #0071E330)',
+                  width: '50px', height: '50px', borderRadius: '16px',
+                  background: 'linear-gradient(135deg, rgba(0,113,227,0.08), rgba(0,113,227,0.18))',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '1.6rem', flexShrink: 0
+                  fontSize: '1.6rem', flexShrink: 0,
                 }}>
-                  {getEmoji(cat.name)}
+                  {cat.icon || '🧋'}
                 </div>
 
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#1d1d1f' }}>{cat.name}</div>
+                  <div style={{ fontWeight: 800, fontSize: '1rem', color: '#1d1d1f' }}>{cat.name}</div>
                   {cat.description && (
-                    <div style={{ fontSize: '0.82rem', color: '#86868b', fontWeight: 500, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#86868b', fontWeight: 500, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {cat.description}
                     </div>
                   )}
                 </div>
 
-                {/* ID badge */}
-                <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#0071E3', background: 'rgba(0,113,227,0.1)', padding: '4px 10px', borderRadius: '10px', flexShrink: 0 }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#0071E3', background: 'rgba(0,113,227,0.1)', padding: '3px 9px', borderRadius: '9px', flexShrink: 0 }}>
                   #{cat.id}
                 </div>
 
-                {/* Actions */}
                 <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                  <button onClick={() => startEdit(cat)} className="icon-btn-apple" style={{ background: 'rgba(0,113,227,0.1)', color: '#0071E3' }}>
-                    <FiEdit2 />
-                  </button>
-                  <button onClick={() => remove(cat)} className="icon-btn-apple" style={{ background: 'rgba(255,59,48,0.1)', color: '#FF3B30' }}>
-                    <FiTrash2 />
-                  </button>
+                  <button onClick={() => startEdit(cat)} className="icon-btn-apple" style={{ background: 'rgba(0,113,227,0.1)', color: '#0071E3' }}><FiEdit2 /></button>
+                  <button onClick={() => remove(cat)} className="icon-btn-apple" style={{ background: 'rgba(255,59,48,0.1)', color: '#FF3B30' }}><FiTrash2 /></button>
                 </div>
               </div>
             )}
@@ -239,8 +260,9 @@ export default function CategoriesTab() {
       </div>
 
       <style>{`
-        .icon-btn-apple { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; transition: all 0.2s; font-size: 1rem; }
+        .icon-btn-apple { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; transition: all 0.2s; font-size: 1rem; }
         .icon-btn-apple:hover { transform: scale(1.1); }
+        @keyframes scaleIn { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
       `}</style>
     </div>
   );
