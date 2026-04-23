@@ -77,10 +77,20 @@ export default function StaffOrdersPage() {
   }, []);
 
   const updateBatchStatus = async (batchId, newStatus) => {
+    // Cập nhật UI ngay lập tức (Optimistic Update)
+    setOrders(prev => prev.map(tableObj => ({
+      ...tableObj,
+      batches: tableObj.batches.map(b =>
+        b.id === batchId ? { ...b, status: newStatus } : b
+      )
+    })));
+    // Gọi API ở nền
     try {
       await axios.put(`https://doigiohu.onrender.com/api/orders/${batchId}/status`, { status: newStatus });
-      fetchActiveOrders();
-    } catch (e) { alert('Lỗi cập nhật: ' + e.message); }
+    } catch (e) {
+      alert('Lỗi cập nhật: ' + e.message);
+      fetchActiveOrders(); // Hoàn tác nếu lỗi
+    }
   };
 
   const openPayment = (tableObj) => setPaymentModal(tableObj);

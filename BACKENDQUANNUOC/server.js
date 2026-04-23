@@ -94,4 +94,15 @@ const PORT = process.env.PORT || 3001;
 
 server.listen(PORT, () => {
   console.log(`Server chạy tại: http://localhost:${PORT}`);
+
+  // Keep-alive: Tự ping mỗi 4 phút để Render không 'ngủ'
+  const SELF_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+  setInterval(() => {
+    const https = SELF_URL.startsWith('https') ? require('https') : require('http');
+    https.get(SELF_URL, (res) => {
+      console.log(`[Keep-alive] Ping ✅ - Status: ${res.statusCode}`);
+    }).on('error', (e) => {
+      console.log(`[Keep-alive] Ping lỗi: ${e.message}`);
+    });
+  }, 4 * 60 * 1000); // Mỗi 4 phút
 });
