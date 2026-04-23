@@ -22,6 +22,14 @@ const createOrder = async (req, res) => {
 
     const orderId = orderResult.insertId;
 
+    // CẬP NHẬT TRẠNG THÁI BÀN SANG 'occupied' (Đang có khách)
+    if (table_id) {
+      await connection.query(
+        'UPDATE tables SET status = "occupied" WHERE id = ?',
+        [table_id]
+      );
+    }
+
     // Insert chi tiết các món (Sửa cột cho khớp SQL: item_name, item_price, options_detail)
     for (const item of items) {
       // Tính line_total sơ bộ: giá * số lượng
