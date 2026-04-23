@@ -15,19 +15,18 @@ const makeQrUrl = (amount, note) =>
 
 const UI_MAP = {
   pending:   { color: '#FF9500', text: 'Chờ Quầy',    bg: 'rgba(255, 149, 0, 0.1)' },
-  confirmed: { color: '#FF9500', text: 'Xác Nhận',    bg: 'rgba(255, 149, 0, 0.1)' },
+  confirmed: { color: '#34C759', text: 'Đã Giao Bàn', bg: 'rgba(52, 199, 89, 0.1)' },
   preparing: { color: '#0071E3', text: 'Đang Pha',    bg: 'rgba(0, 113, 227, 0.1)' },
-  ready:     { color: '#FF3B30', text: 'Chờ Giao',    bg: 'rgba(255, 59, 48, 0.1)' },
-  delivered: { color: '#34C759', text: 'Đã Giao',     bg: 'rgba(52, 199, 89, 0.1)' },
+  ready:     { color: '#FF9500', text: 'Chờ Giao',    bg: 'rgba(255, 149, 0, 0.1)' },
 };
 
 const getUi = (status) => UI_MAP[status] || { color: '#86868B', text: status || '...', bg: 'rgba(0,0,0,0.05)' };
 
 const getTablePriorityStatus = (batches) => {
   if (batches.some(b => b.status === 'pending'))   return 'pending';
-  if (batches.some(b => b.status === 'ready'))     return 'ready';
   if (batches.some(b => b.status === 'preparing')) return 'preparing';
-  return 'delivered';
+  if (batches.some(b => b.status === 'ready'))     return 'ready';
+  return 'confirmed';
 };
 
 export default function StaffOrdersPage() {
@@ -187,7 +186,7 @@ export default function StaffOrdersPage() {
                             </button>
                           )}
                           {batch.status === 'ready' && (
-                            <button onClick={() => updateBatchStatus(batch.id, 'completed')} className="btn-sleek" style={{ padding: '10px 20px', fontSize: '0.85rem', width: 'auto', background: '#FF3B30' }}>
+                            <button onClick={() => updateBatchStatus(batch.id, 'confirmed')} className="btn-sleek" style={{ padding: '10px 20px', fontSize: '0.85rem', width: 'auto', background: '#FF3B30' }}>
                               Giao tới bàn
                             </button>
                           )}
