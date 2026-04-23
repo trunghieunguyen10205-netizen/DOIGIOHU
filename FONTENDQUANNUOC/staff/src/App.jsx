@@ -36,7 +36,8 @@ const RequireRole = ({ type, children }) => {
     return <Navigate to="/login" replace />;
   }
   
-  if (type === 'staff' && role !== 'staff') {
+  // Cho phép Manager/Admin truy cập route của Staff
+  if (type === 'staff' && role !== 'staff' && !isManager) {
     console.log('[Guard] Unauthorized for staff route, redirecting to /login');
     return <Navigate to="/login" replace />;
   }

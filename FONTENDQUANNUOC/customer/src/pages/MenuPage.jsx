@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import LogoHeader from '../components/LogoHeader';
 import axios from 'axios';
@@ -35,15 +35,21 @@ export default function MenuPage() {
   }, [fetchData]);
 
   const isFoodCat = (catName) => FOOD_KEYWORDS.some(kw => catName.includes(kw));
-  const currentCategories = categories.filter(cat =>
-    activeType === 'food' ? isFoodCat(cat.name) : !isFoodCat(cat.name)
-  );
+  
+  const currentCategories = useMemo(() => {
+    return categories.filter(cat =>
+      activeType === 'food' ? isFoodCat(cat.name) : !isFoodCat(cat.name)
+    );
+  }, [categories, activeType]);
 
   useEffect(() => {
-    if (currentCategories.length > 0 && !currentCategories.find(c => c.id === activeCat)) {
-      setActiveCat(currentCategories[0].id);
+    if (currentCategories.length > 0) {
+      const exists = currentCategories.find(c => c.id === activeCat);
+      if (!exists) {
+        setActiveCat(currentCategories[0].id);
+      }
     }
-  }, [activeType, currentCategories, activeCat]);
+  }, [currentCategories, activeCat]);
 
   const filteredItems = items.filter(item => item.category_id === activeCat);
 

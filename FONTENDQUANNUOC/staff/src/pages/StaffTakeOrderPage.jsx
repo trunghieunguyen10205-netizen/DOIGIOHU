@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiPlus, FiMinus, FiShoppingBag, FiX } from 'react-icons/fi';
 import axios from 'axios';
@@ -26,16 +26,22 @@ export default function StaffTakeOrderPage() {
 
   useEffect(() => {
     // Gọi Database thật nhe! Lấy all=true để thấy món tạm hết
-    axios.get(`${API_BASE}/menu-items?all=true`).then(res => setMenuItems(res.data)).catch(console.error);
+    axios.get(`${API_BASE}/menu-items?all=true`)
+      .then(res => setMenuItems(Array.isArray(res.data) ? res.data : []))
+      .catch(console.error);
     
     // Gọi API lấy Categories thay vì mảng Fake
-    axios.get(`${API_BASE}/categories`).then(res => {
-      setCategories([{id: 0, name: 'Tất cả'}, ...res.data]);
-    }).catch(console.error);
+    axios.get(`${API_BASE}/categories`)
+      .then(res => {
+        const cats = Array.isArray(res.data) ? res.data : [];
+        setCategories([{id: 0, name: 'Tất cả'}, ...cats]);
+      })
+      .catch(console.error);
 
     // Xin Danh sách Đơn thực tế của Bàn Này (bỏ Mock)
     axios.get(`${API_BASE}/orders`).then(res => {
-      const activeBatches = res.data.filter(o => String(o.table_id) === String(tableId));
+      const data = Array.isArray(res.data) ? res.data : [];
+      const activeBatches = data.filter(o => String(o.table_id) === String(tableId));
       if (activeBatches.length > 0) {
         setIsOccupied(true);
         let itemsAggr = [];
@@ -95,9 +101,12 @@ export default function StaffTakeOrderPage() {
     }
   };
 
-  const filteredItems = activeCat === 'Tất cả' 
-    ? menuItems 
-    : menuItems.filter(i => i.category_id === categories.find(c => c.name === activeCat)?.id);
+  const filteredItems = useMemo(() => {
+    if (!Array.isArray(menuItems)) return [];
+    if (activeCat === 'Tất cả') return menuItems;
+    const cat = categories.find(c => c.name === activeCat);
+    return menuItems.filter(i => i.category_id === cat?.id);
+  }, [menuItems, activeCat, categories]);
     
   const total = cart.reduce((acc, i) => acc + i.price * i.qty, 0);
 
@@ -192,7 +201,7 @@ export default function StaffTakeOrderPage() {
             }}
           >
             <img 
-              src={item.image ? (item.image.startsWith('http') ? item.image : `https://doigiohu.onrender.com/${item.image}`) : `https://placehold.co/60x60/6366f1/fff?text=${item.name[0]}`}
+              src={item.image ? (item.image.startsWith('http') ? item.image : `https://doigiohu.onrender.com/${item.image}`) : `https://placehold.co/60x60/6366f1/fff?text=${encodeURIComponent(item.name ? item.name[0] : '?')}`}
               alt={item.name}
               style={{ width: '50px', height: '50px', borderRadius: '12px', objectFit: 'cover' }}
             />
@@ -240,7 +249,17 @@ export default function StaffTakeOrderPage() {
           </div>
 
           {isOccupied && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderTop: '1px dashed #cbd5e1', borderBottom: '1px solid #cbd5e1', marginBottom: '15px', background: '#FFF1F2', margin: '0 -24px 15px', padding: '10px 24px' }}>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              borderTop: '1px dashed #cbd5e1', 
+              borderBottom: '1px solid #cbd5e1', 
+              marginBottom: '15px', 
+              background: '#FFF1F2', 
+              margin: '0 -24px 15px', 
+              padding: '10px 24px' 
+            }}>
               <span style={{ fontWeight: 700, color: '#F43F5E' }}>Tổng tiền bàn này mâm:</span>
               <span style={{ fontSize: '1.4rem', fontWeight: 900, color: '#E11D48' }}>{(existingTotal + total).toLocaleString()}đ</span>
             </div>
