@@ -173,14 +173,19 @@ const updateOrderStatus = async (req, res) => {
     
     if (orders.length > 0) {
       const updatedOrder = orders[0];
+      
+      // Nếu hoàn tất hoặc hủy đơn, giải phóng bàn sang 'available'
+      if (status === 'completed' || status === 'cancelled') {
+        if (updatedOrder.table_id) {
+          await pool.query("UPDATE tables SET status = 'available' WHERE id = ?", [updatedOrder.table_id]);
+        }
+      }
+
       if (req.io) {
         req.io.to(`order_${updatedOrder.order_code}`).emit('order:status_change', { status });
         req.io.to('staff_room').emit('order:updated', updatedOrder);
-        
-        // Luôn báo cập nhật bàn cho chắc chắn
         req.io.emit('table:update');
-
-        // Nếu hoàn tất đơn, báo cho Admin cập nhật doanh thu tức thì
+        
         if (status === 'completed') {
           req.io.emit('revenue:update');
         }
@@ -189,6 +194,7 @@ const updateOrderStatus = async (req, res) => {
 
     res.status(200).json({ message: 'Đã cập nhật trạng thái đơn' });
   } catch (error) {
+    console.error('LỖI CẬP NHẬT TRẠNG THÁI:', error);
     res.status(500).json({ message: 'Lỗi server', error: error.message });
   }
 };
@@ -201,26 +207,35 @@ const processPayment = async (req, res) => {
 
     await connection.beginTransaction();
 
+    // Sửa cột payment_method -> method, bỏ payment_status vì không có trong SQL
     await connection.query(
-      'INSERT INTO payments (order_id, amount, payment_method, payment_status) VALUES (?, ?, ?, ?)',
-      [id, amount, payment_method, 'completed']
+      'INSERT INTO payments (order_id, amount, method) VALUES (?, ?, ?)',
+      [id, amount, payment_method]
     );
 
-    // Có thể tự động update state đơn hàng thành completed luôn tuỳ nghiệp vụ
-    await connection.query('UPDATE orders SET status = ? WHERE id = ?', ['completed', id]);
+    // Update đơn hàng thành completed
+    await connection.query("UPDATE orders SET status = 'completed', payment_status = 'paid' WHERE id = ?", [id]);
+
+    // Giải phóng bàn
+    const [orders] = await connection.query('SELECT table_id, order_code FROM orders WHERE id = ?', [id]);
+    if (orders.length > 0 && orders[0].table_id) {
+      await connection.query("UPDATE tables SET status = 'available' WHERE id = ?", [orders[0].table_id]);
+    }
 
     await connection.commit();
 
     // Socket
-    const [orders] = await pool.query('SELECT * FROM orders WHERE id = ?', [id]);
     if (orders.length > 0 && req.io) {
       req.io.to(`order_${orders[0].order_code}`).emit('order:status_change', { status: 'completed' });
-      req.io.to('staff_room').emit('order:updated', orders[0]);
+      req.io.to('staff_room').emit('order:updated', { id, status: 'completed' });
+      req.io.emit('table:update');
+      req.io.emit('revenue:update');
     }
 
     res.status(200).json({ message: 'Đã thanh toán thành công' });
   } catch (error) {
     await connection.rollback();
+    console.error('LỖI THANH TOÁN:', error);
     res.status(500).json({ message: 'Lỗi server', error: error.message });
   } finally {
     connection.release();
