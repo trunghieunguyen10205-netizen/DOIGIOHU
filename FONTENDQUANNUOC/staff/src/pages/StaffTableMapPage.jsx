@@ -21,8 +21,14 @@ export default function StaffTableMapPage() {
     
     fetchActiveOrders();
 
-    // Kết nối Socket để cập nhật tức thì
-    const socket = io(SOCKET_URL);
+    // Kết nối Socket để cập nhật tức thì (Dùng transport websocket để ổn định trên Render)
+    const socket = io(SOCKET_URL, {
+      transports: ['websocket'],
+      upgrade: false
+    });
+    
+    socket.on('connect', () => console.log('✅ Đã kết nối Socket tại Sơ đồ bàn'));
+    
     socket.on('table:update', () => {
       console.log('--- Nhận tín hiệu cập nhật bàn mới ---');
       fetchActiveOrders();

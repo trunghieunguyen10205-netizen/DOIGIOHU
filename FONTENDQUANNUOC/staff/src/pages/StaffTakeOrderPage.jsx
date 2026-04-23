@@ -47,7 +47,7 @@ export default function StaffTakeOrderPage() {
         let itemsAggr = [];
         activeBatches.forEach(b => {
           b.items.forEach(it => {
-            itemsAggr.push({ id: it.id, name: it.name, price: it.price_snapshot, qty: it.quantity, status: b.status });
+            itemsAggr.push({ id: it.id, name: it.name, price: it.item_price, qty: it.quantity, status: b.status });
           });
         });
         setExistingOrders(itemsAggr);
