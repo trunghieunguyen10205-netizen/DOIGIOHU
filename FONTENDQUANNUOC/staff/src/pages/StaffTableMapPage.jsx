@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { io } from 'socket.io-client';
+
+const SOCKET_URL = 'https://doigiohu.onrender.com';
 
 export default function StaffTableMapPage() {
   const navigate = useNavigate();
@@ -17,8 +20,15 @@ export default function StaffTableMapPage() {
     };
     
     fetchActiveOrders();
-    const interval = setInterval(fetchActiveOrders, 5000);
-    return () => clearInterval(interval);
+
+    // Kết nối Socket để cập nhật tức thì
+    const socket = io(SOCKET_URL);
+    socket.on('table:update', () => {
+      console.log('--- Nhận tín hiệu cập nhật bàn mới ---');
+      fetchActiveOrders();
+    });
+
+    return () => socket.disconnect();
   }, []);
 
   const tables = Array.from({ length: 40 }, (_, i) => {

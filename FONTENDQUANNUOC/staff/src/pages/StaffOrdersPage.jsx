@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
-import { FiClock, FiCheck, FiPlay, FiDollarSign, FiCoffee, FiTruck, FiPlus, FiX, FiSmartphone } from 'react-icons/fi';
+import { FiClock, FiCheck, FiX, FiCheckCircle, FiDollarSign } from 'react-icons/fi';
 import axios from 'axios';
+import { io } from 'socket.io-client';
+
+const SOCKET_URL = 'https://doigiohu.onrender.com';
 
 // ── Cấu hình MB Bank ───────────────────────────────────────────
 const MB_ACCOUNT_NO   = '0949239191';
@@ -56,8 +59,22 @@ export default function StaffOrdersPage() {
 
   useEffect(() => {
     fetchActiveOrders();
-    const interval = setInterval(fetchActiveOrders, 10000);
-    return () => clearInterval(interval);
+
+    // Socket cập nhật tức thì
+    const socket = io(SOCKET_URL);
+    socket.emit('join:staff_room');
+    
+    socket.on('order:new', () => {
+      console.log('--- Có đơn hàng mới! ---');
+      fetchActiveOrders();
+    });
+
+    socket.on('order:updated', () => {
+      console.log('--- Đơn hàng đã thay đổi ---');
+      fetchActiveOrders();
+    });
+
+    return () => socket.disconnect();
   }, []);
 
   const updateBatchStatus = async (batchId, newStatus) => {

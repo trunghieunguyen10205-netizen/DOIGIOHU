@@ -60,6 +60,8 @@ const createOrder = async (req, res) => {
         status: 'pending',
         time: new Date()
       });
+      // Gửi tín hiệu cập nhật bàn tức thì
+      req.io.emit('table:update');
     }
 
     res.status(201).json({ 
@@ -175,6 +177,9 @@ const updateOrderStatus = async (req, res) => {
         req.io.to(`order_${updatedOrder.order_code}`).emit('order:status_change', { status });
         req.io.to('staff_room').emit('order:updated', updatedOrder);
         
+        // Luôn báo cập nhật bàn cho chắc chắn
+        req.io.emit('table:update');
+
         // Nếu hoàn tất đơn, báo cho Admin cập nhật doanh thu tức thì
         if (status === 'completed') {
           req.io.emit('revenue:update');
