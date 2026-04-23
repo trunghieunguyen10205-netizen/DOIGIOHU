@@ -23,9 +23,7 @@ export default function LoginPage() {
       localStorage.setItem('role', user.role);
       localStorage.setItem('user', JSON.stringify(user));
 
-      alert(`ĐĂNG NHẬP THÀNH CÔNG!\n- Username: ${user.username}\n- Quyền (Role): [${user.role}]\n- Full Name: ${user.full_name}\n\nNhấn OK để hệ thống chuyển trang.`);
-
-      // Chuyển hướng ngay lập tức
+      // Chuyển trang ngay, không cần popup
       const finalRole = String(user.role || '').trim().toLowerCase();
       if (finalRole === 'manager' || finalRole === 'admin') {
         window.location.href = '/manager';

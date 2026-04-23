@@ -2,12 +2,14 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiPlus, FiMinus, FiShoppingBag, FiX } from 'react-icons/fi';
 import axios from 'axios';
+import { useNotification } from '../components/Notification';
 
 const API_BASE = 'https://doigiohu.onrender.com/api';
 
 export default function StaffTakeOrderPage() {
   const { tableId } = useParams();
   const navigate = useNavigate();
+  const { showToast, NotificationUI } = useNotification();
   
   const [menuItems, setMenuItems] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -94,10 +96,10 @@ export default function StaffTakeOrderPage() {
       };
       
       await axios.post(`${API_BASE}/orders`, payload);
-      alert('Đã đẩy lệnh Gọi Món thành công vào Cơ Sở Dữ Liệu! 🚀');
+      showToast('Đặt món thành công! 🚀', 'Đơn hàng đã được gửi tới bếp', 'success');
       navigate('/');
     } catch (error) {
-      alert('Lỗi DB: ' + (error.response?.data?.message || error.message));
+      showToast('Lỗi gửi đơn', error.response?.data?.message || error.message, 'error');
     }
   };
 

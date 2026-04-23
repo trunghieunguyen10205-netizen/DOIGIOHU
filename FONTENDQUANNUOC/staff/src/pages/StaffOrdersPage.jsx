@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { FiClock, FiCheck, FiX, FiCheckCircle, FiDollarSign, FiSmartphone } from 'react-icons/fi';
 import axios from 'axios';
 import { io } from 'socket.io-client';
+import { useNotification } from '../components/Notification';
 
 const SOCKET_URL = 'https://doigiohu.onrender.com';
 
@@ -33,6 +34,7 @@ export default function StaffOrdersPage() {
   const [orders, setOrders]             = useState([]);
   const [loading, setLoading]           = useState(true);
   const [paymentModal, setPaymentModal] = useState(null);
+  const { showToast, showConfirm, NotificationUI } = useNotification();
 
   const fetchActiveOrders = () => {
     axios.get('https://doigiohu.onrender.com/api/orders')
@@ -84,39 +86,55 @@ export default function StaffOrdersPage() {
         b.id === batchId ? { ...b, status: newStatus } : b
       )
     })));
-    // Gọi API ở nền
     try {
       await axios.put(`https://doigiohu.onrender.com/api/orders/${batchId}/status`, { status: newStatus });
     } catch (e) {
-      alert('Lỗi cập nhật: ' + e.message);
-      fetchActiveOrders(); // Hoàn tác nếu lỗi
+      showToast('Lỗi cập nhật', e.message, 'error');
+      fetchActiveOrders();
     }
   };
 
   const openPayment = (tableObj) => setPaymentModal(tableObj);
 
   const confirmCash = async () => {
-    if (!window.confirm(`Xác nhận thu ${paymentModal.total.toLocaleString()}đ tiền mặt?`)) return;
+    const ok = await showConfirm({
+      icon: '💵',
+      title: 'Thu Tiền Mặt',
+      message: `Xác nhận thu ${paymentModal.total.toLocaleString()}đ tiền mặt?`,
+      confirmText: 'Xác nhận',
+      cancelText: 'Huỷ',
+    });
+    if (!ok) return;
     try {
       for (const b of paymentModal.batches)
         await axios.put(`https://doigiohu.onrender.com/api/orders/${b.id}/status`, { status: 'completed' });
       setPaymentModal(null);
+      showToast('Thanh toán thành công!', `Đã thu ${paymentModal.total.toLocaleString()}đ`, 'success');
       fetchActiveOrders();
-    } catch (e) { alert('Lỗi: ' + e.message); }
+    } catch (e) { showToast('Lỗi thanh toán', e.message, 'error'); }
   };
 
   const confirmTransfer = async () => {
-    if (!window.confirm(`Xác nhận đã nhận chuyển khoản ${paymentModal.total.toLocaleString()}đ?`)) return;
+    const ok = await showConfirm({
+      icon: '📱',
+      title: 'Xác nhận Chuyển Khoản',
+      message: `Đã nhận chuyển khoản ${paymentModal.total.toLocaleString()}đ?`,
+      confirmText: 'Đã nhận',
+      cancelText: 'Huỷ',
+    });
+    if (!ok) return;
     try {
       for (const b of paymentModal.batches)
         await axios.put(`https://doigiohu.onrender.com/api/orders/${b.id}/status`, { status: 'completed' });
       setPaymentModal(null);
+      showToast('Thanh toán thành công!', `Đã nhận ${paymentModal.total.toLocaleString()}đ qua chuyển khoản`, 'success');
       fetchActiveOrders();
-    } catch (e) { alert('Lỗi: ' + e.message); }
+    } catch (e) { showToast('Lỗi thanh toán', e.message, 'error'); }
   };
 
   return (
     <>
+      {NotificationUI}
       <div className="layout-container" style={{ paddingBottom: '120px' }}>
         {/* Apple Style Glass Header */}
         <div style={{ 
