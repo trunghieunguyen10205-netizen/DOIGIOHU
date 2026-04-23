@@ -153,29 +153,26 @@ export default function ProductsTab() {
 
   return (
     <div className="animate-up">
-      {/* Apple Style Toolbar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '35px', gap: '20px', flexWrap: 'wrap' }}>
-        <div>
-          <h3 style={{ margin: 0, fontWeight: 900, fontSize: '1.8rem', letterSpacing: '-0.02em' }}>Danh mục sản phẩm</h3>
-          <p style={{ color: '#86868b', fontSize: '0.9rem', fontWeight: 600, marginTop: '4px' }}>Quản lý menu và tình trạng kho hàng</p>
-        </div>
-        
-        <div style={{ display: 'flex', gap: '15px', alignItems: 'center', minWidth: '350px' }}>
-          <div style={{ flex: 1, minWidth: '220px' }}>
-            <div style={{ position: 'relative' }}>
-              <FiTag style={{ position: 'absolute', left: '18px', top: '50%', transform: 'translateY(-50%)', zIndex: 1, color: '#86868b' }} />
-              <GlassSelect 
-                value={filterCat}
-                onChange={setFilterCat}
-                placeholder="Tất cả danh mục"
-                options={[{ value: 'all', label: 'Tất cả danh mục' }, ...categories.map(c => ({ value: String(c.id), label: c.name }))]}
-              />
-            </div>
+      {/* Apple Style Toolbar - mobile responsive */}
+      <div style={{ marginBottom: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px', gap: '12px' }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3 style={{ margin: 0, fontWeight: 900, fontSize: 'clamp(1.2rem, 5vw, 1.8rem)', letterSpacing: '-0.02em' }}>Danh mục sản phẩm</h3>
+            <p style={{ color: '#86868b', fontSize: '0.82rem', fontWeight: 600, marginTop: '4px', margin: '4px 0 0' }}>Quản lý menu và tình trạng kho hàng</p>
           </div>
-
-          <button onClick={openAdd} className="btn-sleek" style={{ width: 'auto', padding: '12px 24px', background: '#0071E3', flexShrink: 0 }}>
+          <button onClick={openAdd} className="btn-sleek" style={{ width: 'auto', padding: '12px 18px', background: '#0071E3', flexShrink: 0, fontSize: '0.9rem' }}>
             <FiPlus /> Thêm Món Mới
           </button>
+        </div>
+        {/* Filter dropdown - full width on mobile */}
+        <div style={{ position: 'relative' }}>
+          <FiTag style={{ position: 'absolute', left: '18px', top: '50%', transform: 'translateY(-50%)', zIndex: 1, color: '#86868b' }} />
+          <GlassSelect 
+            value={filterCat}
+            onChange={setFilterCat}
+            placeholder="Tất cả danh mục"
+            options={[{ value: 'all', label: 'Tất cả danh mục' }, ...categories.map(c => ({ value: String(c.id), label: c.name }))]}
+          />
         </div>
       </div>
 
@@ -236,22 +233,39 @@ export default function ProductsTab() {
         ))}
       </div>
 
-      {/* Glassmorphism Modal */}
+      {/* Full-screen scrollable Modal for mobile */}
       {modal !== null && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(15px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div className="modern-card animate-scale" style={{ width: '100%', maxWidth: '500px', padding: '35px', boxShadow: '0 30px 60px rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.4)', overflow: 'visible' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-              <h3 style={{ margin: 0, fontWeight: 900, fontSize: '1.5rem' }}>{modal === 'add' ? 'Thêm món mới' : 'Chỉnh sửa món'}</h3>
-              <button onClick={() => setModal(null)} className="icon-btn-apple" style={{ background: 'rgba(0,0,0,0.05)' }}><FiX size={24} /></button>
+        <div style={{
+          position: 'fixed', inset: 0,
+          background: 'rgba(0,0,0,0.4)',
+          backdropFilter: 'blur(15px)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'flex-start',       // bắt đầu từ trên xuống, không bị che bởi bottom nav
+          justifyContent: 'center',
+          padding: '16px 16px 100px',     // padding bottom 100px nhường chỗ cho bottom nav
+          overflowY: 'auto',
+        }}>
+          <div className="modern-card animate-scale" style={{
+            width: '100%',
+            maxWidth: '500px',
+            padding: '24px',
+            boxShadow: '0 30px 60px rgba(0,0,0,0.2)',
+            border: '1px solid rgba(255,255,255,0.4)',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h3 style={{ margin: 0, fontWeight: 900, fontSize: '1.3rem' }}>{modal === 'add' ? 'Thêm món mới' : 'Chỉnh sửa món'}</h3>
+              <button onClick={() => setModal(null)} className="icon-btn-apple" style={{ background: 'rgba(0,0,0,0.05)' }}><FiX size={22} /></button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div className="input-group-apple">
                 <FiType className="input-icon" />
                 <input placeholder="Tên món ăn / đồ uống" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="glass-input-premium" />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '15px' }}>
+              {/* Price + Category - stack on very small screens */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div className="input-group-apple">
                   <FiDollarSign className="input-icon" />
                   <input type="number" placeholder="Giá bán" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} className="glass-input-premium" />
@@ -261,7 +275,7 @@ export default function ProductsTab() {
                   <GlassSelect 
                     value={form.category_id}
                     onChange={val => setForm({ ...form, category_id: val })}
-                    placeholder="Chọn danh mục"
+                    placeholder="Danh mục"
                     options={categories.map(c => ({ value: c.id, label: c.name }))}
                   />
                 </div>
@@ -269,22 +283,29 @@ export default function ProductsTab() {
 
               <div className="input-group-apple">
                 <FiAlignLeft className="input-icon" />
-                <textarea placeholder="Mô tả ngắn về sản phẩm..." value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="glass-input-premium" rows="3" style={{ height: 'auto', padding: '15px 15px 15px 45px' }} />
+                <textarea placeholder="Mô tả ngắn về sản phẩm..." value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="glass-input-premium" rows="2" style={{ height: 'auto', padding: '15px 15px 15px 45px' }} />
               </div>
 
+              {/* URL input - truncated display */}
               <div className="input-group-apple">
                 <FiImage className="input-icon" />
-                <input placeholder="Đường dẫn ảnh (URL hoặc uploads/name.jpg)" value={form.image} onChange={e => setForm({ ...form, image: e.target.value })} className="glass-input-premium" />
+                <input
+                  placeholder="Đường dẫn ảnh (URL)"
+                  value={form.image}
+                  onChange={e => setForm({ ...form, image: e.target.value })}
+                  className="glass-input-premium"
+                  style={{ textOverflow: 'ellipsis' }}
+                />
               </div>
 
               {form.image && (
-                <div style={{ borderRadius: '20px', overflow: 'hidden', height: '140px', border: '2px solid rgba(0,0,0,0.05)' }}>
+                <div style={{ borderRadius: '16px', overflow: 'hidden', height: '120px', border: '2px solid rgba(0,0,0,0.05)' }}>
                   <img src={form.image.startsWith('http') ? form.image : `https://doigiohu.onrender.com/${form.image}`} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
               )}
             </div>
 
-            <div style={{ display: 'flex', gap: '15px', marginTop: '35px' }}>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
               <button onClick={() => setModal(null)} className="btn-sleek" style={{ flex: 1, background: 'rgba(0,0,0,0.05)', color: '#1d1d1f' }}>Hủy bỏ</button>
               <button onClick={save} disabled={saving} className="btn-sleek" style={{ flex: 2, background: '#0071E3', color: '#fff' }}>
                 {saving ? 'Đang lưu...' : <><FiCheck /> Xác nhận lưu</>}
