@@ -10,6 +10,52 @@ const getCategories = async (req, res) => {
   }
 };
 
+// ─── Tạo danh mục mới ──────────────────────────────────────────────
+const createCategory = async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    if (!name) return res.status(400).json({ message: 'Thiếu tên danh mục' });
+    const [result] = await pool.query(
+      'INSERT INTO categories (name, description) VALUES (?, ?)',
+      [name, description || null]
+    );
+    const [newCat] = await pool.query('SELECT * FROM categories WHERE id = ?', [result.insertId]);
+    res.status(201).json(newCat[0]);
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi server', error: error.message });
+  }
+};
+
+// ─── Sửa danh mục ────────────────────────────────────────────────
+const updateCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description } = req.body;
+    await pool.query('UPDATE categories SET name=?, description=? WHERE id=?', [name, description || null, id]);
+    const [updated] = await pool.query('SELECT * FROM categories WHERE id = ?', [id]);
+    if (updated.length === 0) return res.status(404).json({ message: 'Không tìm thấy danh mục' });
+    res.status(200).json(updated[0]);
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi server', error: error.message });
+  }
+};
+
+// ─── Xóa danh mục ────────────────────────────────────────────────
+const deleteCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Kiểm tra có món thuộc danh mục này không
+    const [items] = await pool.query('SELECT id FROM menu_items WHERE category_id = ?', [id]);
+    if (items.length > 0) {
+      return res.status(400).json({ message: `Không thể xóa: danh mục đang có ${items.length} món. Hãy chuyển hoặc xóa các món trước.` });
+    }
+    await pool.query('DELETE FROM categories WHERE id = ?', [id]);
+    res.status(200).json({ message: 'Đã xóa danh mục' });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi server', error: error.message });
+  }
+};
+
 // ─── Lấy món (public: chỉ available; admin: tất cả) ───────────────────────
 const getMenuItems = async (req, res) => {
   try {
@@ -104,6 +150,9 @@ const toggleAvailability = async (req, res) => {
 
 module.exports = {
   getCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
   getMenuItems,
   getMenuItemById,
   createMenuItem,

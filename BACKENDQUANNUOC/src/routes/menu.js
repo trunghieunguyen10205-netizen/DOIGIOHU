@@ -1,6 +1,9 @@
 const express = require('express');
 const {
   getCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
   getMenuItems,
   getMenuItemById,
   createMenuItem,
@@ -11,12 +14,15 @@ const {
 
 const router = express.Router();
 
-// ─── Public / Staff routes ──────────────────────────────────────────────────
+// ─── Category CRUD routes ──────────────────────────────────────────────────
 router.get('/categories', getCategories);
-router.get('/menu-items', getMenuItems);           // ?all=true để lấy cả món hết hàng
-router.get('/menu-items/:id', getMenuItemById);
+router.post('/categories', createCategory);
+router.put('/categories/:id', updateCategory);
+router.delete('/categories/:id', deleteCategory);
 
-// ─── Manager/Admin CRUD routes ─────────────────────────────────────────────
+// ─── Menu Items routes ─────────────────────────────────────────────────────
+router.get('/menu-items', getMenuItems);
+router.get('/menu-items/:id', getMenuItemById);
 router.post('/menu-items', createMenuItem);
 router.put('/menu-items/:id', updateMenuItem);
 router.delete('/menu-items/:id', deleteMenuItem);

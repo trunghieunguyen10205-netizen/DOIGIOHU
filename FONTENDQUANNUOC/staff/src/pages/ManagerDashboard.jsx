@@ -3,6 +3,7 @@ import { FiClock, FiCheck, FiPlay, FiDollarSign, FiCoffee, FiTruck,
          FiShoppingBag, FiBarChart2, FiLogOut, FiUsers, FiGrid, FiRefreshCw, FiPackage, FiPlus, FiEdit2, FiTrash2, FiSave, FiX, FiCalendar, FiActivity } from 'react-icons/fi';
 import axios from 'axios';
 import ProductsTab from './ProductsTab';
+import CategoriesTab from './CategoriesTab';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
 import { io } from 'socket.io-client';
 
@@ -17,10 +18,11 @@ const UI_MAP = {
 };
 
 const TABS = [
-  { key: 'orders',   icon: <FiShoppingBag />, label: 'Đơn Hàng' },
-  { key: 'products', icon: <FiPackage />,     label: 'Sản Phẩm' },
-  { key: 'stats',    icon: <FiBarChart2 />,   label: 'Doanh Thu' },
-  { key: 'staff',    icon: <FiUsers />,       label: 'Nhân Viên' },
+  { key: 'orders',     icon: <FiShoppingBag />, label: 'Đơn Hàng' },
+  { key: 'products',   icon: <FiPackage />,     label: 'Sản Phẩm' },
+  { key: 'categories', icon: <FiGrid />,        label: 'Danh Mục' },
+  { key: 'stats',      icon: <FiBarChart2 />,   label: 'Doanh Thu' },
+  { key: 'staff',      icon: <FiUsers />,       label: 'Nhân Viên' },
 ];
 
 export default function ManagerDashboard() {
@@ -306,10 +308,11 @@ export default function ManagerDashboard() {
 
   const renderContent = () => {
     switch(tab) {
-      case 'orders': return renderOrdersTab();
-      case 'products': return <ProductsTab />;
-      case 'stats': return renderStatsTab();
-      case 'staff': return renderStaffTab();
+      case 'orders':     return renderOrdersTab();
+      case 'products':   return <ProductsTab />;
+      case 'categories': return <CategoriesTab />;
+      case 'stats':      return renderStatsTab();
+      case 'staff':      return renderStaffTab();
       default: return null;
     }
   };
