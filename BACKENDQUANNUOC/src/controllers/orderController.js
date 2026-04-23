@@ -25,7 +25,7 @@ const createOrder = async (req, res) => {
     // CẬP NHẬT TRẠNG THÁI BÀN SANG 'occupied' (Đang có khách)
     if (table_id) {
       await connection.query(
-        'UPDATE tables SET status = "occupied" WHERE id = ?',
+        "UPDATE tables SET status = 'occupied' WHERE id = ?",
         [table_id]
       );
     }
@@ -109,7 +109,7 @@ const getOrderByCode = async (req, res) => {
 const getOrders = async (req, res) => {
   try {
     // Lấy các đơn hàng chưa hoàn tất (đang active tại quán)
-    const [orders] = await pool.query('SELECT * FROM orders WHERE status != "completed" ORDER BY created_at ASC');
+    const [orders] = await pool.query("SELECT * FROM orders WHERE status != 'completed' ORDER BY created_at ASC");
     
     // Trích xuất chi tiết order_items cho từng đơn
     for (let i = 0; i < orders.length; i++) {
