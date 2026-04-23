@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiClock, FiCheck, FiX, FiCheckCircle, FiDollarSign } from 'react-icons/fi';
+import { FiClock, FiCheck, FiX, FiCheckCircle, FiDollarSign, FiSmartphone } from 'react-icons/fi';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 
@@ -43,7 +43,7 @@ export default function StaffOrdersPage() {
         rawOrders.forEach(row => {
           const tId = row.table_id != null ? row.table_id : 'Mang đi';
           if (!map[tId]) map[tId] = { id: tId, table: `Bàn ${tId}`, total: 0, batches: [] };
-          map[tId].total += parseFloat(row.total_amount) || 0;
+          map[tId].total += parseFloat(row.total) || 0;
           map[tId].batches.push({
             id: row.id,
             time: new Date(row.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
@@ -187,7 +187,7 @@ export default function StaffOrdersPage() {
                             </button>
                           )}
                           {batch.status === 'ready' && (
-                            <button onClick={() => updateBatchStatus(batch.id, 'delivered')} className="btn-sleek" style={{ padding: '10px 20px', fontSize: '0.85rem', width: 'auto', background: '#FF3B30' }}>
+                            <button onClick={() => updateBatchStatus(batch.id, 'completed')} className="btn-sleek" style={{ padding: '10px 20px', fontSize: '0.85rem', width: 'auto', background: '#FF3B30' }}>
                               Giao tới bàn
                             </button>
                           )}
